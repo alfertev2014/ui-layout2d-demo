@@ -7,11 +7,14 @@ import java.util.List;
 
 public interface FrameNode extends ContainerNode, HasFixedSize {
 
-    static FrameNode of(Dimension sz, TreeNode ...content) {
-        return of(sz, List.of(content));
+    Layout getLayout();
+
+    @Override
+    default List<? extends TreeNode> getContent() {
+        return getLayout().getContent();
     }
 
-    static FrameNode of(Dimension sz, List<? extends TreeNode> content) {
+    static FrameNode of(Dimension sz, Layout layout) {
         return new FrameNode() {
             private Dimension size = sz;
             private Insets paddings = new Insets(0, 0, 0, 0);
@@ -28,8 +31,8 @@ public interface FrameNode extends ContainerNode, HasFixedSize {
             }
 
             @Override
-            public List<? extends TreeNode> getContent() {
-                return content;
+            public Layout getLayout() {
+                return layout;
             }
 
             @Override
@@ -40,6 +43,7 @@ public interface FrameNode extends ContainerNode, HasFixedSize {
             @Override
             public void setBounds(Rectangle value) {
                 bounds = value;
+                layout.updateLayout(bounds);
             }
 
             @Override

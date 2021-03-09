@@ -13,10 +13,10 @@ public interface TextCaption extends SceneNode, RectangleShape {
     @Override
     default void draw(Graphics g, Point offset) {
         g.setColor(getColor());
-        g.setFont(getFont());
-
+        Font font = getFont();
+        g.setFont(font);
         Rectangle bounds = getBounds();
-        g.drawString(getText(), bounds.x + offset.x, bounds.y + offset.y);
+        g.drawString(getText(), bounds.x + offset.x, bounds.y + offset.y + font.getSize());
     }
 
     static TextCaption of(Rectangle bounds, Color color, Font font, String text) {

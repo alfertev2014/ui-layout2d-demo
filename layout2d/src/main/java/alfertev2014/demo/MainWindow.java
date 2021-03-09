@@ -6,13 +6,15 @@ import java.awt.*;
 public class MainWindow extends JFrame {
 
     public MainWindow() throws HeadlessException {
-        var canvas = new Canvas();
-        add(canvas);
-
-        setSize(350, 250);
-        setTitle("Points");
+        setSize(500, 400);
+        setTitle("Layouts");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        Container contentPane = getContentPane();
+        var canvas = new Canvas();
+        canvas.setVisible(true);
+        contentPane.add(canvas);
     }
 
     public static void main(String[] args) {

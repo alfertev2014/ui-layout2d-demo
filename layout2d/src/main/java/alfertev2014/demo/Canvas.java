@@ -1,27 +1,32 @@
 package alfertev2014.demo;
 
+import alfertev2014.layout2d.dom.*;
 import alfertev2014.layout2d.dom.BoxLayout;
-import alfertev2014.layout2d.dom.FrameNode;
-import alfertev2014.layout2d.dom.TextNode;
-import alfertev2014.layout2d.dom.TreeFragment;
+import alfertev2014.layout2d.scene.SceneNode;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.stream.Collectors;
 
 public class Canvas extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        getTree().render().draw(g, new Point(0, 0));
+        super.paintComponent(g);
+
+        getBounds();
+        tree.setBounds(new Rectangle(new Point(), getSize()));
+        for (SceneNode n : tree.render().collect(Collectors.toList())) {
+            n.draw(g, new Point(0, 0));
+        };
     }
 
-    private final TreeFragment tree = BoxLayout.of(1,
+    private final LayoutItem tree =
             FrameNode.of(new Dimension(500, 300),
-                    TextNode.of(Color.BLACK, Font.getFont("Monospace"), "Hello!")
-            )
-    );
-
-    private TreeFragment getTree() {
-        return tree;
-    }
+                    BoxLayout.of(1,
+                            TextNode.of(Color.BLACK, new Font("Serif", Font.PLAIN, 20),
+                                    "Hello!\nWorld!!!"
+                            )
+                    )
+            );
 }

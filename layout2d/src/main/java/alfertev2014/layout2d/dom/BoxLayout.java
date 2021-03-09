@@ -16,7 +16,9 @@ public interface BoxLayout extends Layout {
     default void updateLayout(Rectangle bounds) {
         List<Dimension> boundsHints = getBoundsHints(bounds);
 
-        placeChildren(boundsHints);
+        if (! boundsHints.isEmpty()) {
+            placeChildren(boundsHints);
+        }
     }
 
     private void placeChildren(List<Dimension> boundsHints) {
@@ -65,10 +67,6 @@ public interface BoxLayout extends Layout {
             stretchedCount = shrinkCount;
         }
 
-        if (stretchedCount <= 0) {
-            return boundsHints;
-        }
-
         int i = 1;
         for (LayoutItem n : content) {
             Dimension size = n.getSizeHint();
@@ -100,12 +98,12 @@ public interface BoxLayout extends Layout {
                 hint.width = size.width;
             }
 
-            if (horizontalPolicy.isGrowing()) {
+            if (! horizontalPolicy.isGrowing()) {
                 if (hint.width < size.width) {
                     hint.width = size.width;
                 }
             }
-            if (horizontalPolicy.isShrinking()) {
+            if (! horizontalPolicy.isShrinking()) {
                 if (hint.width > size.width) {
                     hint.width = size.width;
                 }

@@ -6,6 +6,7 @@ import alfertev2014.layout2d.geom.SizePolicy;
 import alfertev2014.layout2d.scene.SceneNode;
 
 import java.awt.*;
+import java.util.stream.Stream;
 
 public interface LayoutItem extends TreeNode, HasSizeHint, HasSizePolicy {
 
@@ -32,7 +33,7 @@ public interface LayoutItem extends TreeNode, HasSizeHint, HasSizePolicy {
             }
 
             @Override
-            public SceneNode render() {
+            public Stream<SceneNode> render() {
                 return layout.render();
             }
 

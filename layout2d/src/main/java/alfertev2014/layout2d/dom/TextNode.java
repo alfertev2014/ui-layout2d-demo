@@ -5,6 +5,7 @@ import alfertev2014.layout2d.scene.SceneNode;
 import alfertev2014.layout2d.scene.TextCaption;
 
 import java.awt.*;
+import java.util.stream.Stream;
 
 public interface TextNode extends LayoutItem {
 
@@ -15,8 +16,8 @@ public interface TextNode extends LayoutItem {
     String getText();
 
     @Override
-    default SceneNode render() {
-        return TextCaption.of(getBounds(), getTextColor(), getFont(), getText());
+    default Stream<SceneNode> render() {
+        return Stream.of(TextCaption.of(getBounds(), getTextColor(), getFont(), getText()));
     }
 
     @Override
@@ -31,7 +32,7 @@ public interface TextNode extends LayoutItem {
 
     @Override
     default Dimension getSizeHint() {
-        return null;
+        return new Dimension();
     }
 
     static TextNode of(Color color, Font font, String text) {
