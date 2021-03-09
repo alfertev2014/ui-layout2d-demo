@@ -18,7 +18,7 @@ public interface ContainerNode extends TreeFragment, LayoutItem, HasPaddings {
             private final List<SceneNode> children = renderContent();
 
             @Override
-            public List<SceneNode> getChildren() {
+            public List<SceneNode> getContent() {
                 return children;
             }
 
@@ -30,8 +30,6 @@ public interface ContainerNode extends TreeFragment, LayoutItem, HasPaddings {
     }
 
     private List<SceneNode> renderContent() {
-        return ContainerNode.this.getContent().stream()
-                .map(Renderable::render)
-                .collect(Collectors.toList());
+        return getContent().stream().map(Renderable::render).collect(Collectors.toList());
     }
 }

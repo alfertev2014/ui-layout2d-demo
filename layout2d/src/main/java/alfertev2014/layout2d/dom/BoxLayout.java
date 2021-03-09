@@ -13,8 +13,8 @@ public interface BoxLayout extends Layout {
     int getSpacing();
 
     @Override
-    default void updateLayout() {
-        List<Dimension> boundsHints = getBoundsHints();
+    default void updateLayout(Rectangle bounds) {
+        List<Dimension> boundsHints = getBoundsHints(bounds);
 
         placeChildren(boundsHints);
     }
@@ -30,7 +30,7 @@ public interface BoxLayout extends Layout {
         }
     }
 
-    private List<Dimension> getBoundsHints() {
+    private List<Dimension> getBoundsHints(Rectangle bounds) {
         List<Dimension> boundsHints = new ArrayList<>();
 
         List<? extends LayoutItem> content = getItems();
@@ -56,7 +56,7 @@ public interface BoxLayout extends Layout {
         }
 
 
-        int freeLength = getBounds().height - preferredLength;
+        int freeLength = bounds.height - preferredLength;
 
         int stretchedCount = 0;
         if (freeLength >= 0) {
@@ -93,7 +93,7 @@ public interface BoxLayout extends Layout {
 
             SizePolicy horizontalPolicy = n.getHorizontalPolicy();
 
-            int preferredWidth = getBounds().width;
+            int preferredWidth = bounds.width;
             if (horizontalPolicy.isExpanding()) {
                 hint.width = preferredWidth;
             } else if (size.width < preferredWidth) {
@@ -146,24 +146,12 @@ public interface BoxLayout extends Layout {
         return getItems().stream().map(HasSizeHint::getSizeHint).collect(Collectors.toUnmodifiableList());
     }
 
-    @Override
-    default SizePolicy getVerticalPolicy() {
-        return SizePolicy.preferred();
-    }
-
-    @Override
-    default SizePolicy getHorizontalPolicy() {
-        return SizePolicy.preferred();
-    }
-
     static BoxLayout of(int spacing, LayoutItem ...nodes) {
         return of(spacing, List.of(nodes));
     }
 
     static BoxLayout of(int spacing, List<? extends LayoutItem> content) {
         return new BoxLayout() {
-            private Rectangle bounds = new Rectangle();
-
             @Override
             public int getSpacing() {
                 return spacing;
@@ -172,16 +160,6 @@ public interface BoxLayout extends Layout {
             @Override
             public List<? extends LayoutItem> getItems() {
                 return content;
-            }
-
-            @Override
-            public Rectangle getBounds() {
-                return bounds;
-            }
-
-            @Override
-            public void setBounds(Rectangle value) {
-                bounds = value;
             }
         };
     }

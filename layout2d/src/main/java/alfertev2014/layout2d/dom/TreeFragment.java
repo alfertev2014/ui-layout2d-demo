@@ -6,7 +6,7 @@ import alfertev2014.layout2d.scene.SceneNode;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public interface TreeFragment extends TreeNode {
+public interface TreeFragment extends Renderable {
 
     List<? extends TreeNode> getContent();
 

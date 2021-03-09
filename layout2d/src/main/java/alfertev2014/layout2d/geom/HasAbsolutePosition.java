@@ -5,4 +5,5 @@ import java.awt.*;
 public interface HasAbsolutePosition {
 
     Point getPosition();
+    void setPosition(Point value);
 }

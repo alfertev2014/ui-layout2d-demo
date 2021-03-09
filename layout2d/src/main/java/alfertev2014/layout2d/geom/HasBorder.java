@@ -1,4 +1,4 @@
-package alfertev2014.layout2d.dom;
+package alfertev2014.layout2d.geom;
 
 import java.awt.*;
 

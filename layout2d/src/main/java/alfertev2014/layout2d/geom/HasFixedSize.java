@@ -2,7 +2,7 @@ package alfertev2014.layout2d.geom;
 
 import java.awt.*;
 
-public interface HasFixedSize extends HasSizeHint {
+public interface HasFixedSize extends HasSizeHint, HasSizePolicy {
 
     default int getWidth() {
         return getSize().width;

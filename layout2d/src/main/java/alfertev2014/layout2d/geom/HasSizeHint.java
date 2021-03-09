@@ -5,7 +5,4 @@ import java.awt.*;
 public interface HasSizeHint {
 
     Dimension getSizeHint();
-
-    SizePolicy getVerticalPolicy();
-    SizePolicy getHorizontalPolicy();
 }
