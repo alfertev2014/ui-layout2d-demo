@@ -4,6 +4,6 @@ import java.awt.*;
 
 public interface HasPaddings {
 
-    Insets getPaddingsValue();
-    void setPaddingsValue(Insets value);
+    Insets getPaddings();
+    void setPaddings(Insets value);
 }

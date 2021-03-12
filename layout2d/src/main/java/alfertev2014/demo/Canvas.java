@@ -14,15 +14,14 @@ public class Canvas extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        getBounds();
-        tree.setBounds(new Rectangle(new Point(), getSize()));
+        tree.setBounds(getBounds());
         for (SceneNode n : tree.render().collect(Collectors.toList())) {
             n.draw(g, new Point(0, 0));
         };
     }
 
     private final LayoutItem tree =
-            FrameNode.of(new Dimension(500, 300),
+            FrameNode.of(new Dimension(500, 300), Color.YELLOW, Color.BLUE,
                     BoxLayout.of(1,
                             TextNode.of(Color.BLACK, new Font("Serif", Font.PLAIN, 20),
                                     "Hello!\nWorld!!!"

@@ -11,19 +11,9 @@ import java.util.stream.Stream;
 
 public interface ContainerNode extends TreeFragment, LayoutItem, HasPaddings {
 
-    default Rectangle getInnerBounds() {
-        Rectangle bounds = getBounds();
-        Point location = bounds.getLocation();
-        Insets paddings = getPaddingsValue();
-
-        return new Rectangle(location.x + paddings.left, location.y + paddings.top,
-                bounds.width - paddings.left - paddings.right,
-                bounds.height - paddings.top - paddings.bottom);
-    }
-
     @Override
     default Stream<SceneNode> render() {
-        Point offset = getInnerBounds().getLocation();
+        Point offset = getBounds().getLocation();
         List<SceneNode> children = TreeFragment.super.render().collect(Collectors.toList());
 
         return Stream.of(new SceneContainer() {
@@ -37,5 +27,14 @@ public interface ContainerNode extends TreeFragment, LayoutItem, HasPaddings {
                 return offset;
             }
         });
+    }
+
+    default Rectangle getInnerBounds() {
+        Rectangle bounds = getBounds();
+        Insets paddings = getPaddings();
+
+        return new Rectangle(paddings.left, paddings.top,
+                bounds.width - paddings.left - paddings.right,
+                bounds.height - paddings.top - paddings.bottom);
     }
 }

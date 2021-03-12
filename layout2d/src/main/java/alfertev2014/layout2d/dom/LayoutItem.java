@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.geom.HasBounds;
 import alfertev2014.layout2d.geom.HasSizeHint;
 import alfertev2014.layout2d.geom.HasSizePolicy;
 import alfertev2014.layout2d.geom.SizePolicy;
@@ -8,10 +9,16 @@ import alfertev2014.layout2d.scene.SceneNode;
 import java.awt.*;
 import java.util.stream.Stream;
 
-public interface LayoutItem extends TreeNode, HasSizeHint, HasSizePolicy {
+public interface LayoutItem extends TreeNode, HasSizeHint, HasSizePolicy, HasLayout, HasBounds {
 
-    Rectangle getBounds();
-    void setBounds(Rectangle value);
+    @Override
+    default void updateLayout(Rectangle bounds) {
+        setBounds(bounds);
+        handleBoundsChanged();
+    }
+
+    // protected
+    void handleBoundsChanged();
 
     static LayoutItem of(Layout layout) {
         return of(layout, SizePolicy.preferred(), SizePolicy.preferred());
@@ -29,7 +36,11 @@ public interface LayoutItem extends TreeNode, HasSizeHint, HasSizePolicy {
             @Override
             public void setBounds(Rectangle value) {
                 bounds = value;
-                layout.updateLayout(bounds);
+            }
+
+            @Override
+            public void handleBoundsChanged() {
+                layout.updateLayout(getBounds());
             }
 
             @Override

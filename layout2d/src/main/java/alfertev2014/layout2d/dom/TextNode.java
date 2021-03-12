@@ -16,6 +16,11 @@ public interface TextNode extends LayoutItem {
     String getText();
 
     @Override
+    default void handleBoundsChanged() {
+        // do nothing
+    }
+
+    @Override
     default Stream<SceneNode> render() {
         return Stream.of(TextCaption.of(getBounds(), getTextColor(), getFont(), getText()));
     }
