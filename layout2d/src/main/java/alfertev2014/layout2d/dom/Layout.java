@@ -22,6 +22,11 @@ public interface Layout extends TreeFragment, HasLayout, HasSizeHint {
             }
 
             @Override
+            public Direction getDirection() {
+                return Direction.Vertical;
+            }
+
+            @Override
             public List<? extends LayoutItem> getItems() {
                 return Collections.emptyList();
             }

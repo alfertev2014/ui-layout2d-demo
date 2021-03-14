@@ -1,16 +1,29 @@
 package alfertev2014.layout2d.dom;
 
-import alfertev2014.layout2d.geom.HasSizeHint;
 import alfertev2014.layout2d.geom.SizePolicy;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface BoxLayout extends Layout {
 
     int getSpacing();
+
+    enum Direction {
+        Vertical,
+        Horizontal
+    }
+
+    Direction getDirection();
+
+    default boolean isVertical() {
+        return getDirection().equals(Direction.Vertical);
+    }
+
+    default boolean isHorizontal() {
+        return getDirection().equals(Direction.Horizontal);
+    }
 
     @Override
     default void updateLayout(Rectangle bounds) {
@@ -23,12 +36,17 @@ public interface BoxLayout extends Layout {
 
     private void placeChildren(List<Dimension> boundsHints) {
         int i = 0;
-        int y = 0;
+        int length = 0;
         for (LayoutItem n : getItems()) {
             Dimension size = boundsHints.get(i);
-            n.setBounds(new Rectangle(0, y, size.width, size.height));
+            if (isVertical()) {
+                n.setBounds(new Rectangle(0, length, size.width, size.height));
+                length += size.height + getSpacing();
+            } else {
+                n.setBounds(new Rectangle(length, 0, size.width, size.height));
+                length += size.width + getSpacing();
+            }
             ++i;
-            y += size.height + getSpacing();
         }
     }
 
@@ -46,7 +64,9 @@ public interface BoxLayout extends Layout {
         int growCount = 0;
         int shrinkCount = 0;
         for (LayoutItem n : content) {
-            SizePolicy policy = n.getVerticalPolicy();
+            SizePolicy policy = isVertical()
+                    ? n.getVerticalPolicy()
+                    : n.getHorizontalPolicy();
             if (policy.isExpanding() && policy.isGrowing()) {
                 ++growCount;
             }
@@ -54,56 +74,84 @@ public interface BoxLayout extends Layout {
                 ++shrinkCount;
             }
             Dimension sizeHint = n.getSizeHint();
-            preferredLength += sizeHint.height;
+            preferredLength += isVertical() ? sizeHint.height : sizeHint.width;
         }
 
 
-        int freeLength = bounds.height - preferredLength;
+        int freeLength = (isVertical() ? bounds.height : bounds.width) - preferredLength;
 
-        int stretchedCount = 0;
-        if (freeLength >= 0) {
-            stretchedCount = growCount;
-        } else {
-            stretchedCount = shrinkCount;
-        }
+        int stretchedCount =
+                freeLength >= 0
+                        ? growCount
+                        : shrinkCount;
 
         int i = 1;
         for (LayoutItem n : content) {
             Dimension size = n.getSizeHint();
             Dimension hint = (Dimension) size.clone();
-            int preferredHeight = hint.height;
+            int possibleLength = isVertical() ? hint.height : hint.width;
 
-            SizePolicy verticalPolicy = n.getVerticalPolicy();
-            if (verticalPolicy.isExpanding()) {
-                hint.height += freeLength * i / stretchedCount - freeLength * (i - 1) / stretchedCount;
+            SizePolicy policy = isVertical() ? n.getVerticalPolicy() : n.getHorizontalPolicy();
+            if (policy.isExpanding()) {
+                int stretchLength = freeLength * i / stretchedCount - freeLength * (i - 1) / stretchedCount;
+                if (isVertical()) {
+                    hint.height += stretchLength;
+                } else {
+                    hint.width += stretchLength;
+                }
 
-                if (verticalPolicy.isGrowing()) {
-                    if (preferredHeight > size.height) {
-                        hint.height = preferredHeight;
+                if (policy.isGrowing()) {
+                    if (isVertical()) {
+                        if (possibleLength > size.height) {
+                            hint.height = possibleLength;
+                        }
+                    } else {
+                        if (possibleLength > size.width) {
+                            hint.width = possibleLength;
+                        }
                     }
                 }
-                if (verticalPolicy.isShrinking()) {
-                    if (preferredHeight < size.height) {
-                        hint.height = preferredHeight;
+                if (policy.isShrinking()) {
+                    if (isVertical()) {
+                        if (possibleLength < size.height) {
+                            hint.height = possibleLength;
+                        }
+                    } else {
+                        if (possibleLength < size.width) {
+                            hint.width = possibleLength;
+                        }
                     }
                 }
             }
 
-            SizePolicy horizontalPolicy = n.getHorizontalPolicy();
+            SizePolicy crossPolicy = n.getHorizontalPolicy();
 
-            int preferredWidth = bounds.width;
-            if (horizontalPolicy.isExpanding()) {
-                hint.width = preferredWidth;
-            } else if (size.width < preferredWidth) {
-                hint.width = size.width;
-            }
-
-            if (! horizontalPolicy.isGrowing()) {
-                if (hint.width < size.width) {
+            if (isVertical()) {
+                if (crossPolicy.isExpanding()) {
+                    hint.width = bounds.width;
+                } else if (size.width < bounds.width) {
                     hint.width = size.width;
                 }
+            } else {
+                if (crossPolicy.isExpanding()) {
+                    hint.height = bounds.height;
+                } else if (size.height < bounds.height) {
+                    hint.height = size.height;
+                }
             }
-            if (! horizontalPolicy.isShrinking()) {
+
+            if (! crossPolicy.isGrowing()) {
+                if (isVertical()) {
+                    if (hint.width < size.width) {
+                        hint.width = size.width;
+                    }
+                } else {
+                    if (hint.height < size.height) {
+                        hint.height = size.height;
+                    }
+                }
+            }
+            if (! crossPolicy.isShrinking()) {
                 if (hint.width > size.width) {
                     hint.width = size.width;
                 }
@@ -119,11 +167,9 @@ public interface BoxLayout extends Layout {
     default Dimension getSizeHint() {
         List<? extends LayoutItem> content = getItems();
 
-        List<Dimension> hints = getHints();
-
         Dimension res = new Dimension(0, 0);
 
-        if (hints.isEmpty())
+        if (content.isEmpty())
             return res;
 
         for (LayoutItem n : content) {
@@ -139,20 +185,28 @@ public interface BoxLayout extends Layout {
         return res;
     }
 
-
-    private List<Dimension> getHints() {
-        return getItems().stream().map(HasSizeHint::getSizeHint).collect(Collectors.toUnmodifiableList());
+    static BoxLayout vertical(int spacing, LayoutItem ...nodes) {
+        return of(Direction.Vertical, spacing, List.of(nodes));
     }
 
-    static BoxLayout of(int spacing, LayoutItem ...nodes) {
-        return of(spacing, List.of(nodes));
+    static BoxLayout horizontal(int spacing, LayoutItem ...nodes) {
+        return of(Direction.Horizontal, spacing, List.of(nodes));
     }
 
-    static BoxLayout of(int spacing, List<? extends LayoutItem> content) {
+    static BoxLayout of(Direction direction, int spacing, LayoutItem ...nodes) {
+        return of(direction, spacing, List.of(nodes));
+    }
+
+    static BoxLayout of(Direction direction, int spacing, List<? extends LayoutItem> content) {
         return new BoxLayout() {
             @Override
             public int getSpacing() {
                 return spacing;
+            }
+
+            @Override
+            public Direction getDirection() {
+                return direction;
             }
 
             @Override

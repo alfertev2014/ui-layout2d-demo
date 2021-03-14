@@ -22,7 +22,7 @@ public class Canvas extends JPanel {
 
     private final LayoutItem tree =
             FrameNode.of(new Dimension(500, 300), Color.YELLOW, Color.BLUE,
-                    BoxLayout.of(1,
+                    BoxLayout.horizontal(1,
                             TextNode.of(Color.BLACK, new Font("Serif", Font.PLAIN, 20),
                                     "Hello!\nWorld!!!"
                             )
