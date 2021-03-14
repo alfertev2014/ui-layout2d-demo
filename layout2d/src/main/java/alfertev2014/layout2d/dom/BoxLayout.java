@@ -27,10 +27,10 @@ public interface BoxLayout extends Layout {
 
     @Override
     default void updateLayout(Rectangle bounds) {
-        List<Dimension> boundsHints = getBoundsHints(bounds);
+        List<Dimension> childrenSizes = calculateChildrenSizes(bounds);
 
-        if (! boundsHints.isEmpty()) {
-            placeChildren(boundsHints);
+        if (! childrenSizes.isEmpty()) {
+            placeChildren(childrenSizes);
         }
     }
 
@@ -50,12 +50,12 @@ public interface BoxLayout extends Layout {
         }
     }
 
-    private List<Dimension> getBoundsHints(Rectangle bounds) {
-        List<Dimension> boundsHints = new ArrayList<>();
+    private List<Dimension> calculateChildrenSizes(Rectangle bounds) {
+        List<Dimension> childrenSizes = new ArrayList<>();
 
         List<? extends LayoutItem> content = getItems();
         if (content.isEmpty())
-            return boundsHints;
+            return childrenSizes;
 
         int spacing = getSpacing();
 
@@ -87,38 +87,38 @@ public interface BoxLayout extends Layout {
 
         int i = 1;
         for (LayoutItem n : content) {
-            Dimension size = n.getSizeHint();
-            Dimension hint = (Dimension) size.clone();
-            int possibleLength = isVertical() ? hint.height : hint.width;
+            Dimension hint = n.getSizeHint();
+            Dimension itemSize = (Dimension) hint.clone();
+            int possibleLength = isVertical() ? itemSize.height : itemSize.width;
 
             SizePolicy policy = isVertical() ? n.getVerticalPolicy() : n.getHorizontalPolicy();
             if (policy.isExpanding()) {
                 int stretchLength = freeLength * i / stretchedCount - freeLength * (i - 1) / stretchedCount;
                 if (isVertical()) {
-                    hint.height += stretchLength;
+                    itemSize.height += stretchLength;
                 } else {
-                    hint.width += stretchLength;
+                    itemSize.width += stretchLength;
                 }
 
                 if (policy.isGrowing()) {
                     if (isVertical()) {
-                        if (possibleLength > size.height) {
-                            hint.height = possibleLength;
+                        if (possibleLength > hint.height) {
+                            itemSize.height = possibleLength;
                         }
                     } else {
-                        if (possibleLength > size.width) {
-                            hint.width = possibleLength;
+                        if (possibleLength > hint.width) {
+                            itemSize.width = possibleLength;
                         }
                     }
                 }
                 if (policy.isShrinking()) {
                     if (isVertical()) {
-                        if (possibleLength < size.height) {
-                            hint.height = possibleLength;
+                        if (possibleLength < hint.height) {
+                            itemSize.height = possibleLength;
                         }
                     } else {
-                        if (possibleLength < size.width) {
-                            hint.width = possibleLength;
+                        if (possibleLength < hint.width) {
+                            itemSize.width = possibleLength;
                         }
                     }
                 }
@@ -128,59 +128,71 @@ public interface BoxLayout extends Layout {
 
             if (isVertical()) {
                 if (crossPolicy.isExpanding()) {
-                    hint.width = bounds.width;
-                } else if (size.width < bounds.width) {
-                    hint.width = size.width;
+                    itemSize.width = bounds.width;
+                } else if (hint.width < bounds.width) {
+                    itemSize.width = hint.width;
                 }
             } else {
                 if (crossPolicy.isExpanding()) {
-                    hint.height = bounds.height;
-                } else if (size.height < bounds.height) {
-                    hint.height = size.height;
+                    itemSize.height = bounds.height;
+                } else if (hint.height < bounds.height) {
+                    itemSize.height = hint.height;
                 }
             }
 
             if (! crossPolicy.isGrowing()) {
                 if (isVertical()) {
-                    if (hint.width < size.width) {
-                        hint.width = size.width;
+                    if (itemSize.width < hint.width) {
+                        itemSize.width = hint.width;
                     }
                 } else {
-                    if (hint.height < size.height) {
-                        hint.height = size.height;
+                    if (itemSize.height < hint.height) {
+                        itemSize.height = hint.height;
                     }
                 }
             }
             if (! crossPolicy.isShrinking()) {
-                if (hint.width > size.width) {
-                    hint.width = size.width;
+                if (itemSize.width > hint.width) {
+                    itemSize.width = hint.width;
                 }
             }
 
-            boundsHints.add(hint);
+            childrenSizes.add(itemSize);
             ++i;
         }
-        return boundsHints;
+        return childrenSizes;
     }
 
     @Override
     default Dimension getSizeHint() {
         List<? extends LayoutItem> content = getItems();
 
-        Dimension res = new Dimension(0, 0);
-
-        if (content.isEmpty())
-            return res;
-
-        for (LayoutItem n : content) {
-            if (n.getSizeHint().width > res.width) {
-                res.width = n.getSizeHint().width;
-            }
-
-            res.height += n.getSizeHint().height;
+        if (content.isEmpty()) {
+            return new Dimension(0, 0);
         }
 
-        res.height += (content.size() - 1) * getSpacing();
+        int spacingSum = (content.size() - 1) * getSpacing();
+
+        Dimension res = isVertical() ?
+                new Dimension(0, spacingSum) :
+                new Dimension(spacingSum, 0);
+
+        for (LayoutItem n : content) {
+            Dimension hint = n.getSizeHint();
+            if (isVertical()) {
+                if (hint.width > res.width) {
+                    res.width = hint.width;
+                }
+
+                res.height += hint.height;
+            } else {
+                if (hint.height > res.height) {
+                    res.height = hint.height;
+                }
+
+                res.width += hint.width;
+            }
+        }
 
         return res;
     }
