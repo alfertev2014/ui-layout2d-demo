@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.dom.layout.Layout;
 import alfertev2014.layout2d.geom.HasBackground;
 import alfertev2014.layout2d.geom.HasBorder;
 import alfertev2014.layout2d.geom.HasFixedSize;
