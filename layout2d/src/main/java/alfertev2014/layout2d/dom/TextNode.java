@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.geom.Alignment;
 import alfertev2014.layout2d.geom.SizePolicy;
 import alfertev2014.layout2d.scene.SceneNode;
 import alfertev2014.layout2d.scene.TextCaption;
@@ -38,6 +39,16 @@ public interface TextNode extends LayoutItem {
     @Override
     default Dimension getSizeHint() {
         return new Dimension();
+    }
+
+    @Override
+    default Alignment getVerticalAlignment() {
+        return Alignment.justify();
+    }
+
+    @Override
+    default Alignment getHorizontalAlignment() {
+        return Alignment.justify();
     }
 
     static TextNode of(Color color, Font font, String text) {

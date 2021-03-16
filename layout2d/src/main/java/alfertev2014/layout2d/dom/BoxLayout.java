@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.geom.Alignment;
 import alfertev2014.layout2d.geom.SizePolicy;
 
 import java.awt.*;
@@ -27,31 +28,23 @@ public interface BoxLayout extends Layout {
 
     @Override
     default void updateLayout(Rectangle bounds) {
-        List<Dimension> childrenSizes = calculateChildrenSizes(bounds);
+        List<Rectangle> childrenSizes = calculateChildrenSizes(bounds);
 
         if (! childrenSizes.isEmpty()) {
             placeChildren(childrenSizes);
         }
     }
 
-    private void placeChildren(List<Dimension> boundsHints) {
+    private void placeChildren(List<Rectangle> boundsHints) {
         int i = 0;
-        int length = 0;
         for (LayoutItem n : getItems()) {
-            Dimension size = boundsHints.get(i);
-            if (isVertical()) {
-                n.setBounds(new Rectangle(0, length, size.width, size.height));
-                length += size.height + getSpacing();
-            } else {
-                n.setBounds(new Rectangle(length, 0, size.width, size.height));
-                length += size.width + getSpacing();
-            }
+            n.setBounds(boundsHints.get(i));
             ++i;
         }
     }
 
-    private List<Dimension> calculateChildrenSizes(Rectangle bounds) {
-        List<Dimension> childrenSizes = new ArrayList<>();
+    private List<Rectangle> calculateChildrenSizes(Rectangle bounds) {
+        List<Rectangle> childrenSizes = new ArrayList<>();
 
         List<? extends LayoutItem> content = getItems();
         if (content.isEmpty())
@@ -85,80 +78,77 @@ public interface BoxLayout extends Layout {
                         ? growCount
                         : shrinkCount;
 
-        int i = 1;
+        int stretchCounter = 1;
+        int length = 0;
         for (LayoutItem n : content) {
             Dimension hint = n.getSizeHint();
-            Dimension itemSize = (Dimension) hint.clone();
-            int possibleLength = isVertical() ? itemSize.height : itemSize.width;
+            Rectangle itemBounds = new Rectangle(hint);
+            int possibleLength = isVertical() ? itemBounds.height : itemBounds.width;
 
             SizePolicy policy = isVertical() ? n.getVerticalPolicy() : n.getHorizontalPolicy();
             if (policy.isExpanding()) {
-                int stretchLength = freeLength * i / stretchedCount - freeLength * (i - 1) / stretchedCount;
+                int stretchLength = freeLength * stretchCounter / stretchedCount - freeLength * (stretchCounter - 1) / stretchedCount;
+                ++stretchCounter;
+
                 if (isVertical()) {
-                    itemSize.height += stretchLength;
+                    itemBounds.height += stretchLength;
                 } else {
-                    itemSize.width += stretchLength;
+                    itemBounds.width += stretchLength;
                 }
 
                 if (policy.isGrowing()) {
                     if (isVertical()) {
                         if (possibleLength > hint.height) {
-                            itemSize.height = possibleLength;
+                            itemBounds.height = possibleLength;
                         }
                     } else {
                         if (possibleLength > hint.width) {
-                            itemSize.width = possibleLength;
+                            itemBounds.width = possibleLength;
                         }
                     }
                 }
                 if (policy.isShrinking()) {
                     if (isVertical()) {
                         if (possibleLength < hint.height) {
-                            itemSize.height = possibleLength;
+                            itemBounds.height = possibleLength;
                         }
                     } else {
                         if (possibleLength < hint.width) {
-                            itemSize.width = possibleLength;
+                            itemBounds.width = possibleLength;
                         }
                     }
                 }
             }
 
-            SizePolicy crossPolicy = n.getHorizontalPolicy();
+            Alignment alignment = isVertical() ? n.getVerticalAlignment() : n.getHorizontalAlignment();
 
             if (isVertical()) {
-                if (crossPolicy.isExpanding()) {
-                    itemSize.width = bounds.width;
-                } else if (hint.width < bounds.width) {
-                    itemSize.width = hint.width;
+                if (alignment.isLeading() && alignment.isTrailing()) {
+                    itemBounds.width = bounds.width;
+                    itemBounds.x = 0;
+                } else if (alignment.isTrailing()) {
+                    itemBounds.x = bounds.width - hint.width;
+                } else if (! alignment.isLeading()) {
+                    itemBounds.x = (bounds.width - hint.width) / 2;
                 }
+
+                itemBounds.y = length;
+                length += itemBounds.height + spacing;
             } else {
-                if (crossPolicy.isExpanding()) {
-                    itemSize.height = bounds.height;
-                } else if (hint.height < bounds.height) {
-                    itemSize.height = hint.height;
+                if (alignment.isLeading() && alignment.isTrailing()) {
+                    itemBounds.height = bounds.height;
+                    itemBounds.y = 0;
+                } else if (alignment.isTrailing()) {
+                    itemBounds.y = bounds.height - hint.height;
+                } else if (! alignment.isLeading()) {
+                    itemBounds.y = (bounds.height - hint.height) / 2;
                 }
+
+                itemBounds.x = length;
+                length += itemBounds.width + spacing;
             }
 
-            if (! crossPolicy.isGrowing()) {
-                if (isVertical()) {
-                    if (itemSize.width < hint.width) {
-                        itemSize.width = hint.width;
-                    }
-                } else {
-                    if (itemSize.height < hint.height) {
-                        itemSize.height = hint.height;
-                    }
-                }
-            }
-            if (! crossPolicy.isShrinking()) {
-                if (itemSize.width > hint.width) {
-                    itemSize.width = hint.width;
-                }
-            }
-
-            childrenSizes.add(itemSize);
-            ++i;
+            childrenSizes.add(itemBounds);
         }
         return childrenSizes;
     }
