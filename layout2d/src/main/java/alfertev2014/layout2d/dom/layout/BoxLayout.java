@@ -1,4 +1,4 @@
-package alfertev2014.layout2d.dom;
+package alfertev2014.layout2d.dom.layout;
 
 import alfertev2014.layout2d.geom.Alignment;
 import alfertev2014.layout2d.geom.SizePolicy;

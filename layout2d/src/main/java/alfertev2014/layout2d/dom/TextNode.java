@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.dom.layout.LayoutItem;
 import alfertev2014.layout2d.geom.Alignment;
 import alfertev2014.layout2d.geom.SizePolicy;
 import alfertev2014.layout2d.scene.SceneNode;

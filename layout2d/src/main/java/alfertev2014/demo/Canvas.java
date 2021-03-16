@@ -1,7 +1,8 @@
 package alfertev2014.demo;
 
 import alfertev2014.layout2d.dom.*;
-import alfertev2014.layout2d.dom.BoxLayout;
+import alfertev2014.layout2d.dom.layout.BoxLayout;
+import alfertev2014.layout2d.dom.layout.LayoutItem;
 import alfertev2014.layout2d.scene.SceneNode;
 
 import javax.swing.*;

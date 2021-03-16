@@ -1,5 +1,6 @@
 package alfertev2014.layout2d.dom;
 
+import alfertev2014.layout2d.dom.layout.LayoutItem;
 import alfertev2014.layout2d.geom.HasPaddings;
 import alfertev2014.layout2d.scene.SceneContainer;
 import alfertev2014.layout2d.scene.SceneNode;

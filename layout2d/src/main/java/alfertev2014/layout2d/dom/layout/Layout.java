@@ -1,5 +1,7 @@
-package alfertev2014.layout2d.dom;
+package alfertev2014.layout2d.dom.layout;
 
+import alfertev2014.layout2d.dom.TreeFragment;
+import alfertev2014.layout2d.dom.TreeNode;
 import alfertev2014.layout2d.geom.HasSizeHint;
 
 import java.util.Collections;
